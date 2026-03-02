@@ -120,9 +120,9 @@ const sum = (arr: Array<number | null | undefined>): number | null => {
 function SiNo({ value, onChange }: { value: SiNoFlag | undefined; onChange: (v: SiNoFlag) => void }) {
   const v = value ?? "-"
   const btn = (t: SiNoFlag) =>
-    `border px-2 py-1 text-xs ${v === t ? "border-slate-900 bg-slate-900 text-white" : "border-slate-500 bg-white text-slate-800"}`
+    `rounded-md border px-2.5 py-1 text-xs font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-slate-500/35 ${v === t ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"}`
   const box = (t: SiNoFlag) =>
-    `inline-flex h-4 w-4 items-center justify-center border ${v === t ? "border-white text-white" : "border-slate-700 text-slate-800"}`
+    `ml-1 inline-flex h-4 w-4 items-center justify-center rounded-sm border ${v === t ? "border-white text-white" : "border-slate-500 text-slate-800"}`
   return (
     <div className="flex flex-wrap gap-2">
       <button type="button" className={btn("-")} onClick={() => onChange("-")}>
@@ -280,28 +280,28 @@ export default function GeGruesoForm() {
     setForm(init())
   }
 
-  const text = "h-9 w-full border border-slate-500 bg-white px-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-700"
+  const text = "h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500/35"
   const topHeaders = ["MUESTRA", "N° OT", "FECHA", "REALIZADO"]
 
   return (
-    <div className="min-h-screen bg-slate-200 p-4 md:p-6">
+    <div className="min-h-screen bg-slate-100 p-4 md:p-6">
       <div className="mx-auto max-w-[1280px] space-y-4">
-        <div className="flex items-center gap-3 border border-slate-300 bg-white px-4 py-3">
-          <div className="flex h-10 w-10 items-center justify-center border border-slate-900 bg-slate-100"><Beaker className="h-5 w-5 text-slate-900" /></div>
+        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-slate-50"><Beaker className="h-5 w-5 text-slate-900" /></div>
           <div><h1 className="text-base font-semibold text-slate-900 md:text-lg">GE Grueso - ASTM C127-25</h1><p className="text-xs text-slate-600">Formato fiel a plantilla Excel</p></div>
         </div>
 
-        {loadingEdit ? <div className="flex h-10 items-center gap-2 border border-slate-300 bg-white px-3 text-sm text-slate-600"><Loader2 className="h-4 w-4 animate-spin" />Cargando ensayo...</div> : null}
+        {loadingEdit ? <div className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 shadow-sm"><Loader2 className="h-4 w-4 animate-spin" />Cargando ensayo...</div> : null}
 
-        <div className="border-2 border-slate-700 bg-[#e5e7eb]">
+        <div className="overflow-hidden rounded-2xl border border-slate-500 bg-[#e5e7eb] shadow-sm">
           <div className="space-y-2 border-b border-slate-700 px-3 py-4 text-center"><p className="text-[30px] font-bold text-slate-900">LABORATORIO DE ENSAYO DE MATERIALES</p><p className="text-2xl font-bold text-slate-900">FORMATO N° F-LEM-P-AG-28.01</p></div>
 
-          <div className="px-3 py-3"><div className="mx-auto max-w-[560px] border border-slate-700"><div className="grid grid-cols-4 bg-white text-center text-xs font-semibold">{topHeaders.map((h, i) => <div key={h} className={`${i < 3 ? "border-r border-slate-700" : ""} py-1`}>{h}</div>)}</div><div className="grid grid-cols-4 border-t border-slate-700"><div className="border-r border-slate-700 p-1"><input className={text} value={form.muestra} onChange={(e) => setField("muestra", e.target.value)} onBlur={() => setField("muestra", normMuestra(form.muestra || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-700 p-1"><input className={text} value={form.numero_ot} onChange={(e) => setField("numero_ot", e.target.value)} onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-700 p-1"><input className={text} value={form.fecha_ensayo} onChange={(e) => setField("fecha_ensayo", e.target.value)} onBlur={() => setField("fecha_ensayo", normDate(form.fecha_ensayo || ""))} autoComplete="off" data-lpignore="true" /></div><div className="p-1"><input className={text} value={form.realizado_por} onChange={(e) => setField("realizado_por", e.target.value)} autoComplete="off" data-lpignore="true" /></div></div></div></div>
+          <div className="px-3 py-3"><div className="mx-auto max-w-[560px] overflow-hidden rounded-lg border border-slate-600"><div className="grid grid-cols-4 bg-white text-center text-xs font-semibold">{topHeaders.map((h, i) => <div key={h} className={`${i < 3 ? "border-r border-slate-700" : ""} py-1`}>{h}</div>)}</div><div className="grid grid-cols-4 border-t border-slate-700"><div className="border-r border-slate-700 p-1"><input className={text} value={form.muestra} onChange={(e) => setField("muestra", e.target.value)} onBlur={() => setField("muestra", normMuestra(form.muestra || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-700 p-1"><input className={text} value={form.numero_ot} onChange={(e) => setField("numero_ot", e.target.value)} onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-700 p-1"><input className={text} value={form.fecha_ensayo} onChange={(e) => setField("fecha_ensayo", e.target.value)} onBlur={() => setField("fecha_ensayo", normDate(form.fecha_ensayo || ""))} autoComplete="off" data-lpignore="true" /></div><div className="p-1"><input className={text} value={form.realizado_por} onChange={(e) => setField("realizado_por", e.target.value)} autoComplete="off" data-lpignore="true" /></div></div></div></div>
 
           <div className="border-y border-slate-700 bg-[#f3f4f6] px-3 py-2 text-center"><p className="text-[30px] font-semibold text-slate-900">Standard Test Method for Relative Density (Specific Gravity) and Absorption of Coarse Aggregate</p><p className="text-[32px] font-semibold text-slate-900">ASTM C127-25</p></div>
 
           <div className="grid grid-cols-1 gap-3 border-b border-slate-700 p-3 xl:grid-cols-[1.55fr_0.9fr_0.75fr]">
-            <div className="border border-slate-700">
+            <div className="overflow-hidden rounded-lg border border-slate-700">
               <div className="border-b border-slate-700 bg-[#f3f4f6] py-1 text-center text-xs font-semibold">Descripción de la muestra</div>
               {[
                 ["- Tamaño máximo nominal", <input className={text} value={form.tamano_maximo_nominal || ""} onChange={(e) => setField("tamano_maximo_nominal", e.target.value)} autoComplete="off" data-lpignore="true" />],
@@ -313,7 +313,7 @@ export default function GeGruesoForm() {
               ].map(([label, control], i) => <div key={label as string} className={`grid grid-cols-[1fr_240px] ${i < 5 ? "border-b border-slate-700" : ""}`}><div className="p-2 text-sm">{label as string}</div><div className="border-l border-slate-700 p-1">{control as JSX.Element}</div></div>)}
             </div>
 
-            <div className="border border-slate-700">
+            <div className="overflow-hidden rounded-lg border border-slate-700">
               <div className="grid grid-cols-2 bg-[#f3f4f6] text-center text-xs font-semibold"><div className="border-r border-slate-700 py-1">Equipo utilizado</div><div className="py-1">Código</div></div>
               {[
                 ["Balanza 1 g", "equipo_balanza_1g_codigo"],
@@ -325,7 +325,7 @@ export default function GeGruesoForm() {
               ].map(([label, key], i) => <div key={key as string} className={`grid grid-cols-2 ${i < 5 ? "border-t border-slate-700" : ""}`}><div className="border-r border-slate-700 p-2 text-sm">{label as string}</div><div className="p-1"><input className={text} value={(form[key as keyof GeGruesoPayload] as string | null | undefined) || ""} onChange={(e) => setField(key as keyof GeGruesoPayload, e.target.value as GeGruesoPayload[keyof GeGruesoPayload])} autoComplete="off" data-lpignore="true" /></div></div>)}
             </div>
 
-            <div className="border border-slate-700">
+            <div className="overflow-hidden rounded-lg border border-slate-700">
               <div className="grid grid-cols-2 bg-[#f3f4f6] text-center text-xs font-semibold"><div className="border-r border-slate-700 py-1">TMN<br />(in.)</div><div className="py-1">MASA MINIMA<br />(kg)</div></div>
               {TMN.map(([a, b], i) => <div key={`${a}-${b}`} className={`grid grid-cols-2 text-center text-sm ${i < TMN.length - 1 ? "border-t border-slate-700" : ""}`}><div className="border-r border-slate-700 py-1">{a}</div><div className="py-1">{b}</div></div>)}
               <div className="border-t border-slate-700 py-1 text-center text-xs">Fuente: Norma ASTM C127-24</div>
@@ -358,18 +358,18 @@ export default function GeGruesoForm() {
           <Report title="2° Fracción" values={{ a: form.fr2_a_g, b: form.fr2_b_g, c: form.fr2_c_g, d: form.fr2_d_g }} setNum={setNum} totalAuto={fr2Auto} totalValue={form.fr2_masa_total_g ?? null} totalField="fr2_masa_total_g" input={text} />
 
           <div className="border-b border-slate-700 px-3 py-2 text-sm"><span className="font-semibold">Nota:</span> La muestra de prueba se enfriará en un período de 1 a 3 horas a temperatura ambiente para agregados hasta 1 1/2 in TMN o hasta que sea manipulable.</div>
-          <div className="border-b border-slate-700 p-3"><div className="mb-1 text-sm font-semibold">Observaciones:</div><textarea className="w-full border border-slate-500 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-700" rows={3} value={form.observaciones || ""} onChange={(e) => setField("observaciones", e.target.value)} autoComplete="off" data-lpignore="true" /></div>
+          <div className="border-b border-slate-700 p-3"><div className="mb-1 text-sm font-semibold">Observaciones:</div><textarea className="w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500/35" rows={3} value={form.observaciones || ""} onChange={(e) => setField("observaciones", e.target.value)} autoComplete="off" data-lpignore="true" /></div>
 
           <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2">
-            <div className="space-y-2 border border-slate-700 bg-[#f3f4f6] p-3"><p className="text-sm font-semibold">Revisado:</p><select className={text} value={form.revisado_por || "-"} onChange={(e) => setField("revisado_por", e.target.value)}>{REVISORES.map((x) => <option key={x} value={x}>{x}</option>)}</select><p className="text-sm font-semibold">Fecha:</p><input className={text} value={form.revisado_fecha || ""} onChange={(e) => setField("revisado_fecha", e.target.value)} onBlur={() => setField("revisado_fecha", normDate(form.revisado_fecha || ""))} autoComplete="off" data-lpignore="true" /></div>
-            <div className="space-y-2 border border-slate-700 bg-[#f3f4f6] p-3"><p className="text-sm font-semibold">Aprobado:</p><select className={text} value={form.aprobado_por || "-"} onChange={(e) => setField("aprobado_por", e.target.value)}>{APROBADORES.map((x) => <option key={x} value={x}>{x}</option>)}</select><p className="text-sm font-semibold">Fecha:</p><input className={text} value={form.aprobado_fecha || ""} onChange={(e) => setField("aprobado_fecha", e.target.value)} onBlur={() => setField("aprobado_fecha", normDate(form.aprobado_fecha || ""))} autoComplete="off" data-lpignore="true" /></div>
+            <div className="space-y-2 rounded-lg border border-slate-500 bg-[#f3f4f6] p-3"><p className="text-sm font-semibold">Revisado:</p><select className={text} value={form.revisado_por || "-"} onChange={(e) => setField("revisado_por", e.target.value)}>{REVISORES.map((x) => <option key={x} value={x}>{x}</option>)}</select><p className="text-sm font-semibold">Fecha:</p><input className={text} value={form.revisado_fecha || ""} onChange={(e) => setField("revisado_fecha", e.target.value)} onBlur={() => setField("revisado_fecha", normDate(form.revisado_fecha || ""))} autoComplete="off" data-lpignore="true" /></div>
+            <div className="space-y-2 rounded-lg border border-slate-500 bg-[#f3f4f6] p-3"><p className="text-sm font-semibold">Aprobado:</p><select className={text} value={form.aprobado_por || "-"} onChange={(e) => setField("aprobado_por", e.target.value)}>{APROBADORES.map((x) => <option key={x} value={x}>{x}</option>)}</select><p className="text-sm font-semibold">Fecha:</p><input className={text} value={form.aprobado_fecha || ""} onChange={(e) => setField("aprobado_fecha", e.target.value)} onBlur={() => setField("aprobado_fecha", normDate(form.aprobado_fecha || ""))} autoComplete="off" data-lpignore="true" /></div>
           </div>
         </div>
 
         <div className="flex flex-wrap justify-end gap-3">
-          <button type="button" className="h-10 border border-slate-500 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60" onClick={clear} disabled={loading}><span className="inline-flex items-center gap-2"><Trash2 className="h-4 w-4" />Limpiar</span></button>
-          <button type="button" className="h-10 border border-slate-900 bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-black disabled:opacity-60" onClick={() => void save(false)} disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar"}</button>
-          <button type="button" className="h-10 border border-emerald-700 bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60" onClick={() => void save(true)} disabled={loading}><span className="inline-flex items-center gap-2">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}Guardar y Descargar</span></button>
+          <button type="button" className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:opacity-60" onClick={clear} disabled={loading}><span className="inline-flex items-center gap-2"><Trash2 className="h-4 w-4" />Limpiar</span></button>
+          <button type="button" className="h-10 rounded-lg border border-slate-900 bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-black disabled:opacity-60" onClick={() => void save(false)} disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar"}</button>
+          <button type="button" className="h-10 rounded-lg border border-emerald-700 bg-emerald-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 disabled:opacity-60" onClick={() => void save(true)} disabled={loading}><span className="inline-flex items-center gap-2">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}Guardar y Descargar</span></button>
         </div>
       </div>
     </div>
