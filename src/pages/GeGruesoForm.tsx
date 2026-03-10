@@ -70,15 +70,10 @@ const formatTodayShortDate = () => {
   return `${dd}/${mm}/${yy}`
 }
 
-const ensureFechaEnsayo = (value: string | null | undefined) => {
-  const text = (value ?? "").trim()
-  return text || formatTodayShortDate()
-}
-
 const init = (): GeGruesoPayload => ({
   muestra: "",
   numero_ot: "",
-  fecha_ensayo: formatTodayShortDate(),
+  fecha_ensayo: "",
   realizado_por: "",
   tamano_maximo_nominal: "",
   agregado_grupo_ligero_si_no: "-",
@@ -307,7 +302,7 @@ export default function GeGruesoForm() {
     if (!raw) return
     try {
       const hydrated = { ...init(), ...JSON.parse(raw) } as GeGruesoPayload
-      hydrated.fecha_ensayo = ensureFechaEnsayo(hydrated.fecha_ensayo)
+      hydrated.fecha_ensayo = normDate(hydrated.fecha_ensayo || "")
       setForm(hydrated)
     } catch {}
   }, [editingId])
@@ -326,7 +321,7 @@ export default function GeGruesoForm() {
         const detail = await getGeGruesoEnsayoDetail(editingId)
         if (!cancelled && detail.payload) {
           const hydrated = { ...init(), ...detail.payload } as GeGruesoPayload
-          hydrated.fecha_ensayo = ensureFechaEnsayo(hydrated.fecha_ensayo)
+          hydrated.fecha_ensayo = normDate(hydrated.fecha_ensayo || "")
           setForm(hydrated)
         }
       } catch {
@@ -397,7 +392,7 @@ export default function GeGruesoForm() {
         <div className="overflow-hidden rounded-2xl border border-slate-300 bg-slate-50 shadow-sm">
           <div className="space-y-2 border-b border-slate-300 px-3 py-4 text-center"><p className="text-[30px] font-semibold text-slate-800">LABORATORIO DE ENSAYO DE MATERIALES</p><p className="text-2xl font-semibold text-slate-800">FORMATO N° F-LEM-P-AG-28.01</p></div>
 
-          <div className="px-3 py-3"><div className="mx-auto max-w-[560px] overflow-hidden rounded-lg border border-slate-300"><div className="grid grid-cols-4 bg-white text-center text-xs font-semibold">{topHeaders.map((h, i) => <div key={h} className={`${i < 3 ? "border-r border-slate-300" : ""} py-1`}>{h}</div>)}</div><div className="grid grid-cols-4 border-t border-slate-300"><div className="border-r border-slate-300 p-1"><input className={text} value={form.muestra} onChange={(e) => setField("muestra", e.target.value)} onBlur={() => setField("muestra", normMuestra(form.muestra || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={text} value={form.numero_ot} onChange={(e) => setField("numero_ot", e.target.value)} onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={text} value={form.fecha_ensayo} onChange={(e) => setField("fecha_ensayo", e.target.value)} onBlur={() => setField("fecha_ensayo", ensureFechaEnsayo(normDate(form.fecha_ensayo || "")))} autoComplete="off" data-lpignore="true" /></div><div className="p-1"><input className={text} value={form.realizado_por} onChange={(e) => setField("realizado_por", e.target.value)} autoComplete="off" data-lpignore="true" /></div></div></div></div>
+          <div className="px-3 py-3"><div className="mx-auto max-w-[560px] overflow-hidden rounded-lg border border-slate-300"><div className="grid grid-cols-4 bg-white text-center text-xs font-semibold">{topHeaders.map((h, i) => <div key={h} className={`${i < 3 ? "border-r border-slate-300" : ""} py-1`}>{h}</div>)}</div><div className="grid grid-cols-4 border-t border-slate-300"><div className="border-r border-slate-300 p-1"><input className={text} value={form.muestra} onChange={(e) => setField("muestra", e.target.value)} onBlur={() => setField("muestra", normMuestra(form.muestra || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={text} value={form.numero_ot} onChange={(e) => setField("numero_ot", e.target.value)} onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={text} value={form.fecha_ensayo} onChange={(e) => setField("fecha_ensayo", e.target.value)} onBlur={() => setField("fecha_ensayo", normDate(form.fecha_ensayo || ""))} autoComplete="off" data-lpignore="true" /></div><div className="p-1"><input className={text} value={form.realizado_por} onChange={(e) => setField("realizado_por", e.target.value)} autoComplete="off" data-lpignore="true" /></div></div></div></div>
 
           <div className="border-y border-slate-300 bg-slate-100 px-3 py-2 text-center"><p className="text-[30px] font-semibold text-slate-800">Standard Test Method for Relative Density (Specific Gravity) and Absorption of Coarse Aggregate</p><p className="text-[32px] font-semibold text-slate-800">ASTM C127-25</p></div>
 
