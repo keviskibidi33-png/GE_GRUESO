@@ -6,6 +6,19 @@ import { getGeGruesoEnsayoDetail, saveAndDownloadGeGruesoExcel, saveGeGruesoEnsa
 import type { GeGruesoPayload, SiNoFlag } from "@/types"
 import FormatConfirmModal from '../components/FormatConfirmModal'
 
+
+const buildFormatPreview = (sampleCode: string | undefined, materialCode: 'SU' | 'AG', ensayo: string) => {
+    const currentYear = new Date().getFullYear().toString().slice(-2)
+    const normalized = (sampleCode || '').trim().toUpperCase()
+    const fullMatch = normalized.match(/^(\d+)(?:-[A-Z0-9. ]+)?-(\d{2,4})$/)
+    const partialMatch = normalized.match(/^(\d+)(?:-(\d{2,4}))?$/)
+    const match = fullMatch || partialMatch
+    const numero = match?.[1] || 'xxxx'
+    const year = (match?.[2] || currentYear).slice(-2)
+    return `Formato N-${numero}-${materialCode}-${year} ${ensayo}`
+}
+
+
 const DRAFT_KEY = "ge_grueso_form_draft_v1"
 const DEBOUNCE_MS = 700
 const REVISORES = ["-", "FABIAN LA ROSA"] as const
@@ -348,11 +361,11 @@ export default function GeGruesoForm() {
       try {
         const payload: GeGruesoPayload = { ...form, fr1_masa_total_g: form.fr1_masa_total_g ?? fr1Auto, fr2_masa_total_g: form.fr2_masa_total_g ?? fr2Auto }
         if (download) {
-          const { blob } = await saveAndDownloadGeGruesoExcel(payload, editingId ?? undefined)
+          const { blob, filename } = await saveAndDownloadGeGruesoExcel(payload, editingId ?? undefined)
           const url = URL.createObjectURL(blob)
           const a = document.createElement("a")
           a.href = url
-          a.download = `GE_GRUESO_${form.numero_ot}_${new Date().toISOString().slice(0, 10)}.xlsx`
+          a.download = filename || `${buildFormatPreview(form.muestra, 'AG', 'GE GRUESO')}.xlsx`
           a.click()
           URL.revokeObjectURL(url)
         } else {
@@ -490,7 +503,7 @@ export default function GeGruesoForm() {
       </div>
         <FormatConfirmModal
             open={pendingFormatAction !== null}
-            formatLabel={`Formato N-xxxx-AG-${new Date().getFullYear().toString().slice(-2)} GE GRUESO`}
+            formatLabel={buildFormatPreview(form.muestra, 'AG', 'GE GRUESO')}
             actionLabel={pendingFormatAction ? 'Guardar y Descargar' : 'Guardar'}
             onClose={() => setPendingFormatAction(null)}
             onConfirm={() => {
