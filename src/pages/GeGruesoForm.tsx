@@ -245,6 +245,8 @@ function Report({
   title,
   values,
   setNum,
+  dBoxes,
+  setDBox,
   totalAuto,
   totalValue,
   totalField,
@@ -253,6 +255,8 @@ function Report({
   title: string
   values: { a: number | null | undefined; b: number | null | undefined; c: number | null | undefined; d: number | null | undefined }
   setNum: (field: NumericField, raw: string) => void
+  dBoxes: { box1: number | null; box2: number | null }
+  setDBox: (box: "box1" | "box2", raw: string) => void
   totalAuto: number | null
   totalValue: number | null
   totalField: NumericField
@@ -282,7 +286,28 @@ function Report({
               <td className="border border-slate-300 px-2 py-1">{label}</td>
               <td className="border border-slate-300 text-center">g</td>
               <td className="border border-slate-300 p-1">
-                <input type="number" step="any" className={input} value={(val as number | null | undefined) ?? ""} onChange={(e) => setNum(`${title.startsWith("1") ? "fr1" : "fr2"}_${k}_g` as NumericField, e.target.value)} />
+                {k === "d" ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      step="any"
+                      className={input}
+                      value={dBoxes.box1 ?? ""}
+                      onChange={(e) => setDBox("box1", e.target.value)}
+                      placeholder="Caja 1"
+                    />
+                    <input
+                      type="number"
+                      step="any"
+                      className={input}
+                      value={dBoxes.box2 ?? ""}
+                      onChange={(e) => setDBox("box2", e.target.value)}
+                      placeholder="Caja 2"
+                    />
+                  </div>
+                ) : (
+                  <input type="number" step="any" className={input} value={(val as number | null | undefined) ?? ""} onChange={(e) => setNum(`${title.startsWith("1") ? "fr1" : "fr2"}_${k}_g` as NumericField, e.target.value)} />
+                )}
               </td>
             </tr>
           ))}
@@ -301,12 +326,34 @@ function Report({
 
 export default function GeGruesoForm() {
   const [form, setForm] = useState<GeGruesoPayload>(() => init())
+  const [dBoxes, setDBoxes] = useState<{ fr1: { box1: number | null; box2: number | null }; fr2: { box1: number | null; box2: number | null } }>({
+    fr1: { box1: null, box2: null },
+    fr2: { box1: null, box2: null },
+  })
   const [loading, setLoading] = useState(false)
   const [loadingEdit, setLoadingEdit] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(() => ensayoIdFromUrl())
 
   const setField = useCallback(<K extends keyof GeGruesoPayload>(k: K, v: GeGruesoPayload[K]) => setForm((p) => ({ ...p, [k]: v })), [])
   const setNum = useCallback((k: NumericField, raw: string) => setField(k, n(raw) as GeGruesoPayload[NumericField]), [setField])
+  const setDBox = useCallback(
+    (fraction: "fr1" | "fr2", box: "box1" | "box2", raw: string) => {
+      const parsed = n(raw)
+      setDBoxes((prev) => {
+        const next = {
+          ...prev,
+          [fraction]: {
+            ...prev[fraction],
+            [box]: parsed,
+          },
+        }
+        const total = sum([next[fraction].box1, next[fraction].box2])
+        setField((`${fraction}_d_g` as NumericField), total as GeGruesoPayload[NumericField])
+        return next
+      })
+    },
+    [setField],
+  )
 
   const fr1Auto = useMemo(() => round4(sum([form.fr1_a_g, form.fr1_b_g, form.fr1_c_g, form.fr1_d_g])), [form.fr1_a_g, form.fr1_b_g, form.fr1_c_g, form.fr1_d_g])
   const fr2Auto = useMemo(() => round4(sum([form.fr2_a_g, form.fr2_b_g, form.fr2_c_g, form.fr2_d_g])), [form.fr2_a_g, form.fr2_b_g, form.fr2_c_g, form.fr2_d_g])
@@ -318,6 +365,10 @@ export default function GeGruesoForm() {
       const hydrated = { ...init(), ...JSON.parse(raw) } as GeGruesoPayload
       hydrated.fecha_ensayo = normDate(hydrated.fecha_ensayo || "")
       setForm(hydrated)
+      setDBoxes({
+        fr1: { box1: hydrated.fr1_d_g ?? null, box2: null },
+        fr2: { box1: hydrated.fr2_d_g ?? null, box2: null },
+      })
     } catch {}
   }, [editingId])
 
@@ -337,6 +388,10 @@ export default function GeGruesoForm() {
           const hydrated = { ...init(), ...detail.payload } as GeGruesoPayload
           hydrated.fecha_ensayo = normDate(hydrated.fecha_ensayo || "")
           setForm(hydrated)
+          setDBoxes({
+            fr1: { box1: hydrated.fr1_d_g ?? null, box2: null },
+            fr2: { box1: hydrated.fr2_d_g ?? null, box2: null },
+          })
         }
       } catch {
         toast.error("No se pudo cargar ensayo GE Grueso para edicion.")
@@ -373,6 +428,10 @@ export default function GeGruesoForm() {
         }
         localStorage.removeItem(`${DRAFT_KEY}:${editingId ?? "new"}`)
         setForm(init())
+        setDBoxes({
+          fr1: { box1: null, box2: null },
+          fr2: { box1: null, box2: null },
+        })
         setEditingId(null)
         if (window.parent !== window) window.parent.postMessage({ type: "CLOSE_MODAL" }, "*")
         toast.success(download ? "GE Grueso guardado y descargado." : "GE Grueso guardado.")
@@ -483,8 +542,28 @@ export default function GeGruesoForm() {
           </div>
 
           <div className="border-b border-slate-300 bg-slate-100 px-3 py-2 text-center text-sm font-bold">REPORTE DE DATOS DE ENSAYO</div>
-          <Report title="1° Fracción" values={{ a: form.fr1_a_g, b: form.fr1_b_g, c: form.fr1_c_g, d: form.fr1_d_g }} setNum={setNum} totalAuto={fr1Auto} totalValue={form.fr1_masa_total_g ?? null} totalField="fr1_masa_total_g" input={text} />
-          <Report title="2° Fracción" values={{ a: form.fr2_a_g, b: form.fr2_b_g, c: form.fr2_c_g, d: form.fr2_d_g }} setNum={setNum} totalAuto={fr2Auto} totalValue={form.fr2_masa_total_g ?? null} totalField="fr2_masa_total_g" input={text} />
+          <Report
+            title="1° Fracción"
+            values={{ a: form.fr1_a_g, b: form.fr1_b_g, c: form.fr1_c_g, d: form.fr1_d_g }}
+            setNum={setNum}
+            dBoxes={dBoxes.fr1}
+            setDBox={(box, raw) => setDBox("fr1", box, raw)}
+            totalAuto={fr1Auto}
+            totalValue={form.fr1_masa_total_g ?? null}
+            totalField="fr1_masa_total_g"
+            input={text}
+          />
+          <Report
+            title="2° Fracción"
+            values={{ a: form.fr2_a_g, b: form.fr2_b_g, c: form.fr2_c_g, d: form.fr2_d_g }}
+            setNum={setNum}
+            dBoxes={dBoxes.fr2}
+            setDBox={(box, raw) => setDBox("fr2", box, raw)}
+            totalAuto={fr2Auto}
+            totalValue={form.fr2_masa_total_g ?? null}
+            totalField="fr2_masa_total_g"
+            input={text}
+          />
 
           <div className="border-b border-slate-300 px-3 py-2 text-sm"><span className="font-semibold">Nota:</span> La muestra de prueba se enfriará en un período de 1 a 3 horas a temperatura ambiente para agregados hasta 1 1/2 in TMN o hasta que sea manipulable.</div>
           <div className="border-b border-slate-300 p-3"><div className="mb-1 text-sm font-semibold">Observaciones:</div><textarea className="w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-500/35" rows={3} value={form.observaciones || ""} onChange={(e) => setField("observaciones", e.target.value)} autoComplete="off" data-lpignore="true" /></div>
