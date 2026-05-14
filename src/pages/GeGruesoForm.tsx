@@ -47,7 +47,7 @@ type EquipoField =
 
 const EQUIPO_OPTIONS: Record<EquipoField, readonly string[]> = {
   equipo_balanza_1g_codigo: ["-", "EQP-0050"],
-  equipo_horno_110_codigo: ["-", "EQP-0049"],
+  equipo_horno_110_codigo: ["-", "EQP-0150"],
   equipo_termometro_01c_codigo: ["-", "INS-0153"],
   equipo_canastilla_codigo: ["-", "INS-0191"],
   equipo_tamiz_codigo: ["-", "INS-0053 (No 4)", "INS-0053 (No 4) y INS-0048"],
@@ -147,27 +147,39 @@ const n = (value: unknown): number | null => {
 
 const y2 = () => new Date().getFullYear().toString().slice(-2)
 const normDate = (raw: string) => {
-  const v = raw.trim()
-  if (!v) return ""
-  const pad2 = (part: string) => part.padStart(2, "0").slice(-2)
-  const build = (d: string, m: string, y: string = y2()) => `${pad2(d)}/${pad2(m)}/${pad2(y)}`
-  if (v.includes("/")) {
-    const [d = "", m = "", yRaw = ""] = v.split("/").map((part) => part.trim())
-    if (!d || !m) return v
-    let yy = yRaw.replace(/\D/g, "")
-    if (yy.length === 4) yy = yy.slice(-2)
-    if (yy.length === 1) yy = `0${yy}`
-    if (!yy) yy = y2()
-    return build(d, m, yy)
-  }
-  const d = v.replace(/\D/g, "")
-  if (d.length === 2) return build(d[0], d[1])
-  if (d.length === 3) return build(d[0], d.slice(1, 3))
-  if (d.length === 4) return build(d.slice(0, 2), d.slice(2, 4))
-  if (d.length === 5) return build(d[0], d.slice(1, 3), d.slice(3, 5))
-  if (d.length === 6) return build(d.slice(0, 2), d.slice(2, 4), d.slice(4, 6))
-  if (d.length >= 8) return build(d.slice(0, 2), d.slice(2, 4), d.slice(6, 8))
-  return v
+    const value = raw.trim()
+    if (!value) return ''
+    const digits = value.replace(/\D/g, '')
+    const currentYear = String(new Date().getFullYear())
+    const pad2 = (part: string) => part.padStart(2, '0').slice(-2)
+    const normalizeYear = (part: string) => {
+        const clean = part.replace(/\D/g, '')
+        if (clean.length >= 4) return clean.slice(0, 4)
+        if (clean.length === 2) return `20${clean}`
+        if (clean.length === 1) return `200${clean}`
+        return currentYear
+    }
+    const build = (y: string, m: string, d: string) => `${normalizeYear(y)}/${pad2(m)}/${pad2(d)}`
+
+    if (value.includes('/') || value.includes('-')) {
+        const [a = '', b = '', c = ''] = value.split(/[/-]/).map((part) => part.trim())
+        if (!a || !b) return value
+        if (a.length === 4) return build(a, b, c || '01')
+        if (c) return build(c, b, a)
+        return value
+    }
+
+    if (digits.length === 8) {
+        if (digits.startsWith('19') || digits.startsWith('20')) return build(digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8))
+        return build(digits.slice(4, 8), digits.slice(2, 4), digits.slice(0, 2))
+    }
+    if (digits.length === 6) return build(digits.slice(4, 6), digits.slice(2, 4), digits.slice(0, 2))
+    if (digits.length === 5) return build(digits.slice(3, 5), digits.slice(1, 3), digits[0])
+    if (digits.length === 4) return build(currentYear, digits.slice(0, 2), digits.slice(2, 4))
+    if (digits.length === 3) return build(currentYear, digits[0], digits.slice(1, 3))
+    if (digits.length === 2) return build(currentYear, digits[0], digits[1])
+
+    return value
 }
 const normMuestra = (raw: string) => {
   const c = raw.trim().toUpperCase().replace(/\s+/g, "")
