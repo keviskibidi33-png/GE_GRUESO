@@ -367,8 +367,8 @@ export default function GeGruesoForm() {
     [setField],
   )
 
-  const fr1Auto = useMemo(() => round4(sum([form.fr1_a_g, form.fr1_b_g, form.fr1_c_g, form.fr1_d_g])), [form.fr1_a_g, form.fr1_b_g, form.fr1_c_g, form.fr1_d_g])
-  const fr2Auto = useMemo(() => round4(sum([form.fr2_a_g, form.fr2_b_g, form.fr2_c_g, form.fr2_d_g])), [form.fr2_a_g, form.fr2_b_g, form.fr2_c_g, form.fr2_d_g])
+  const fr1Auto = useMemo(() => round4(form.fr1_d_g), [form.fr1_d_g])
+  const fr2Auto = useMemo(() => round4(form.fr2_d_g), [form.fr2_d_g])
 
   useEffect(() => {
     const raw = localStorage.getItem(`${DRAFT_KEY}:${editingId ?? "new"}`)
