@@ -185,8 +185,8 @@ const normDate = (raw: string) => {
 }
 const normMuestra = (raw: string) => {
   const c = raw.trim().toUpperCase().replace(/\s+/g, "")
-  const m = c.match(/^(\d+)(?:-SU)?(?:-(\d{2}))?$/)
-  return m ? `${m[1]}-SU-${m[2] || y2()}` : raw.trim().toUpperCase()
+  const m = c.match(/^(\d+)(?:-AG)?(?:-(\d{2}))?$/)
+  return m ? `${m[1]}-AG-${m[2] || y2()}` : raw.trim().toUpperCase()
 }
 const normOt = (raw: string) => {
   const c = raw.trim().toUpperCase().replace(/\s+/g, "")
