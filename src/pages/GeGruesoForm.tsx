@@ -7,7 +7,9 @@ import type { GeGruesoPayload, SiNoFlag } from "@/types"
 import FormatConfirmModal from '../components/FormatConfirmModal'
 
 
-const buildFormatPreview = (sampleCode: string | undefined, materialCode: 'SU' | 'AG', ensayo: string) => {
+const MATERIAL_CODE = 'AG' as const
+
+const buildFormatPreview = (sampleCode: string | undefined, ensayo: string) => {
     const currentYear = new Date().getFullYear().toString().slice(-2)
     const normalized = (sampleCode || '').trim().toUpperCase()
     const fullMatch = normalized.match(/^(\d+)(?:-[A-Z0-9. ]+)?-(\d{2,4})$/)
@@ -15,7 +17,7 @@ const buildFormatPreview = (sampleCode: string | undefined, materialCode: 'SU' |
     const match = fullMatch || partialMatch
     const numero = match?.[1] || 'xxxx'
     const year = (match?.[2] || currentYear).slice(-2)
-    return `Formato N-${numero}-${materialCode}-${year} ${ensayo}`
+    return `Formato N-${numero}-${MATERIAL_CODE}-${year} ${ensayo}`
 }
 
 
@@ -432,7 +434,7 @@ export default function GeGruesoForm() {
           const url = URL.createObjectURL(blob)
           const a = document.createElement("a")
           a.href = url
-          a.download = filename || `${buildFormatPreview(form.muestra, 'AG', 'GE GRUESO')}.xlsx`
+          a.download = filename || `${buildFormatPreview(form.muestra, 'GE GRUESO')}.xlsx`
           a.click()
           URL.revokeObjectURL(url)
         } else {
@@ -594,7 +596,7 @@ export default function GeGruesoForm() {
       </div>
         <FormatConfirmModal
             open={pendingFormatAction !== null}
-            formatLabel={buildFormatPreview(form.muestra, 'AG', 'GE GRUESO')}
+            formatLabel={buildFormatPreview(form.muestra, 'GE GRUESO')}
             actionLabel={pendingFormatAction ? 'Guardar y Descargar' : 'Guardar'}
             onClose={() => setPendingFormatAction(null)}
             onConfirm={() => {
