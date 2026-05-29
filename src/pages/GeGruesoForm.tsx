@@ -9,7 +9,7 @@ import FormatConfirmModal from '../components/FormatConfirmModal'
 
 const MATERIAL_CODE = 'AG' as const
 
-const buildFormatPreview = (sampleCode: string | undefined, ensayo: string) => {
+const buildFormatPreview = (sampleCode: string | undefined, materialCode: 'SU' | 'AG', ensayo: string) => {
     const currentYear = new Date().getFullYear().toString().slice(-2)
     const normalized = (sampleCode || '').trim().toUpperCase()
     const fullMatch = normalized.match(/^(\d+)(?:-[A-Z0-9. ]+)?-(\d{2,4})$/)
@@ -17,7 +17,7 @@ const buildFormatPreview = (sampleCode: string | undefined, ensayo: string) => {
     const match = fullMatch || partialMatch
     const numero = match?.[1] || 'xxxx'
     const year = (match?.[2] || currentYear).slice(-2)
-    return `Formato N-${numero}-${MATERIAL_CODE}-${year} ${ensayo}`
+    return `Formato N-${numero}-${materialCode}-${year} ${ensayo}`
 }
 
 
@@ -183,10 +183,48 @@ const normDate = (raw: string) => {
 
     return value
 }
-const normMuestra = (raw: string) => {
-  const c = raw.trim().toUpperCase().replace(/\s+/g, "")
-  const m = c.match(/^(\d+)(?:-AG)?(?:-(\d{2}))?$/)
-  return m ? `${m[1]}-AG-${m[2] || y2()}` : raw.trim().toUpperCase()
+const parseMuestraCode = (muestra: string, defaultType: 'SU' | 'AG' = 'SU') => {
+    const clean = (muestra || '').trim().toUpperCase().replace(/\s+/g, '')
+    const currentYear = '26'
+    if (!clean) return { number: '', type: defaultType, year: currentYear }
+
+    const parts = clean.split('-')
+    
+    let type: 'SU' | 'AG' = defaultType
+    if (clean.includes('-SU')) {
+        type = 'SU'
+    } else if (clean.includes('-AG')) {
+        type = 'AG'
+    }
+
+    const filteredParts = parts.filter(p => p !== 'SU' && p !== 'AG')
+
+    let number = ''
+    let year = currentYear
+
+    if (filteredParts.length === 0) {
+        return { number: '', type, year }
+    }
+
+    if (filteredParts.length === 1) {
+        number = filteredParts[0]
+    } else {
+        const last = filteredParts[filteredParts.length - 1]
+        if (/^\d{2,4}$/.test(last)) {
+            year = last.slice(-2)
+            number = filteredParts.slice(0, -1).join('-')
+        } else {
+            number = filteredParts.join('-')
+        }
+    }
+
+    return { number, type, year }
+}
+
+const buildMuestraCode = (number: string, type: 'SU' | 'AG', year: string) => {
+    const cleanNum = number.trim()
+    if (!cleanNum) return ''
+    return `${cleanNum}-${type}-${year}`
 }
 const normOt = (raw: string) => {
   const c = raw.trim().toUpperCase().replace(/\s+/g, "")
@@ -348,6 +386,40 @@ export default function GeGruesoForm() {
   const [loadingEdit, setLoadingEdit] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(() => ensayoIdFromUrl())
 
+  const [muestraInput, setMuestraInput] = useState('')
+  const [muestraType, setMuestraType] = useState<'SU' | 'AG'>('AG')
+
+  useEffect(() => {
+    if (form.muestra && !muestraInput) {
+      const { number, type, year } = parseMuestraCode(form.muestra, 'AG')
+      const currentYear = '26'
+      const displayVal = year && year !== currentYear ? `${number}-${year}` : number
+      setMuestraInput(displayVal)
+      setMuestraType(type)
+    }
+  }, [form.muestra, muestraInput])
+
+  useEffect(() => {
+    if (!form.muestra) {
+      setMuestraInput('')
+      setMuestraType('AG')
+    }
+  }, [form.muestra])
+
+  const handleMuestraInputChange = (val: string) => {
+    setMuestraInput(val)
+    const { number, year } = parseMuestraCode(val, muestraType)
+    const newCode = buildMuestraCode(number, muestraType, year)
+    setField('muestra', newCode)
+  }
+
+  const handleTypeToggle = (newType: 'SU' | 'AG') => {
+    setMuestraType(newType)
+    const { number, year } = parseMuestraCode(muestraInput, newType)
+    const newCode = buildMuestraCode(number, newType, year)
+    setField('muestra', newCode)
+  }
+
   const setField = useCallback(<K extends keyof GeGruesoPayload>(k: K, v: GeGruesoPayload[K]) => setForm((p) => ({ ...p, [k]: v })), [])
   const setNum = useCallback((k: NumericField, raw: string) => setField(k, n(raw) as GeGruesoPayload[NumericField]), [setField])
   const setDBox = useCallback(
@@ -434,7 +506,7 @@ export default function GeGruesoForm() {
           const url = URL.createObjectURL(blob)
           const a = document.createElement("a")
           a.href = url
-          a.download = filename || `${buildFormatPreview(form.muestra, 'GE GRUESO')}.xlsx`
+          a.download = filename || `${buildFormatPreview(form.muestra, muestraType, 'GE GRUESO')}.xlsx`
           a.click()
           URL.revokeObjectURL(url)
         } else {
@@ -456,7 +528,7 @@ export default function GeGruesoForm() {
         setLoading(false)
       }
     },
-    [editingId, form, fr1Auto, fr2Auto],
+    [editingId, form, fr1Auto, fr2Auto, muestraType],
   )
 
   const clear = () => {
@@ -481,7 +553,42 @@ export default function GeGruesoForm() {
         <div className="overflow-hidden rounded-2xl border border-slate-300 bg-slate-50 shadow-sm">
           <div className="space-y-2 border-b border-slate-300 px-3 py-4 text-center"><p className="text-[30px] font-semibold text-slate-800">LABORATORIO DE ENSAYO DE MATERIALES</p><p className="text-2xl font-semibold text-slate-800">FORMATO N° F-LEM-P-AG-28.01</p></div>
 
-          <div className="px-3 py-3"><div className="mx-auto max-w-[560px] overflow-hidden rounded-lg border border-slate-300"><div className="grid grid-cols-4 bg-white text-center text-xs font-semibold">{topHeaders.map((h, i) => <div key={h} className={`${i < 3 ? "border-r border-slate-300" : ""} py-1`}>{h}</div>)}</div><div className="grid grid-cols-4 border-t border-slate-300"><div className="border-r border-slate-300 p-1"><input className={`${text} text-center`} value={form.muestra} onChange={(e) => setField("muestra", e.target.value)} onBlur={() => setField("muestra", normMuestra(form.muestra || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={`${text} text-center`} value={form.numero_ot} onChange={(e) => setField("numero_ot", e.target.value)} onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={`${text} text-center`} value={form.fecha_ensayo} onChange={(e) => setField("fecha_ensayo", e.target.value)} onBlur={() => setField("fecha_ensayo", normDate(form.fecha_ensayo || ""))} autoComplete="off" data-lpignore="true" /></div><div className="p-1"><input className={`${text} text-center`} value={form.realizado_por} onChange={(e) => setField("realizado_por", e.target.value)} autoComplete="off" data-lpignore="true" /></div></div></div></div>
+          <div className="px-3 py-3"><div className="mx-auto max-w-[560px] overflow-hidden rounded-lg border border-slate-300"><div className="grid grid-cols-4 bg-white text-center text-xs font-semibold">{topHeaders.map((h, i) => <div key={h} className={`${i < 3 ? "border-r border-slate-300" : ""} py-1`}>{h}</div>)}</div><div className="grid grid-cols-4 border-t border-slate-300"><div className="border-r border-slate-300 p-1">
+  <div className="flex items-center gap-1.5 px-0.5">
+    <input
+      className={`${text} text-center flex-1 min-w-[70px]`}
+      value={muestraInput}
+      onChange={(e) => handleMuestraInputChange(e.target.value)}
+      autoComplete="off"
+      data-lpignore="true"
+      placeholder="1234"
+    />
+    <div className="flex border border-slate-300 rounded overflow-hidden shrink-0 bg-white h-9">
+      <button
+        type="button"
+        onClick={() => handleTypeToggle('SU')}
+        className={`px-2 py-1 text-[11px] font-bold transition-all ${
+          muestraType === 'SU'
+            ? 'bg-slate-900 text-white'
+            : 'bg-white text-slate-600 hover:bg-slate-50'
+        }`}
+      >
+        SU
+      </button>
+      <button
+        type="button"
+        onClick={() => handleTypeToggle('AG')}
+        className={`px-2 py-1 text-[11px] font-bold border-l border-slate-300 transition-all ${
+          muestraType === 'AG'
+            ? 'bg-slate-900 text-white'
+            : 'bg-white text-slate-600 hover:bg-slate-50'
+        }`}
+      >
+        AG
+      </button>
+    </div>
+  </div>
+</div><div className="border-r border-slate-300 p-1"><input className={`${text} text-center`} value={form.numero_ot} onChange={(e) => setField("numero_ot", e.target.value)} onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={`${text} text-center`} value={form.fecha_ensayo} onChange={(e) => setField("fecha_ensayo", e.target.value)} onBlur={() => setField("fecha_ensayo", normDate(form.fecha_ensayo || ""))} autoComplete="off" data-lpignore="true" /></div><div className="p-1"><input className={`${text} text-center`} value={form.realizado_por} onChange={(e) => setField("realizado_por", e.target.value)} autoComplete="off" data-lpignore="true" /></div></div></div></div>
 
           <div className="border-y border-slate-300 bg-slate-100 px-3 py-2 text-center"><p className="text-[30px] font-semibold text-slate-800">Standard Test Method for Relative Density (Specific Gravity) and Absorption of Coarse Aggregate</p><p className="text-[32px] font-semibold text-slate-800">ASTM C127-25</p></div>
 
@@ -596,7 +703,7 @@ export default function GeGruesoForm() {
       </div>
         <FormatConfirmModal
             open={pendingFormatAction !== null}
-            formatLabel={buildFormatPreview(form.muestra, 'GE GRUESO')}
+            formatLabel={buildFormatPreview(form.muestra, muestraType, 'GE GRUESO')}
             actionLabel={pendingFormatAction ? 'Guardar y Descargar' : 'Guardar'}
             onClose={() => setPendingFormatAction(null)}
             onConfirm={() => {
