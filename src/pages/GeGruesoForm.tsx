@@ -467,6 +467,11 @@ export default function GeGruesoForm() {
 
   const fr1Auto = useMemo(() => round4(form.fr1_d_g), [form.fr1_d_g])
   const fr2Auto = useMemo(() => round4(form.fr2_d_g), [form.fr2_d_g])
+  const muestraCodigoPreview = useMemo(() => {
+    const number = muestraInput.trim()
+    if (!number) return ""
+    return buildMuestraCode(number, muestraType, muestraYear || new Date().getFullYear().toString().slice(-2))
+  }, [muestraInput, muestraType, muestraYear])
 
   useEffect(() => {
     const raw = localStorage.getItem(`${DRAFT_KEY}:${editingId ?? "new"}`)
@@ -577,42 +582,92 @@ export default function GeGruesoForm() {
         <div className="overflow-hidden rounded-2xl border border-slate-300 bg-slate-50 shadow-sm">
           <div className="space-y-2 border-b border-slate-300 px-3 py-4 text-center"><p className="text-[30px] font-semibold text-slate-800">LABORATORIO DE ENSAYO DE MATERIALES</p><p className="text-2xl font-semibold text-slate-800">FORMATO N° F-LEM-P-AG-28.01</p></div>
 
-          <div className="px-3 py-3"><div className="mx-auto max-w-[560px] overflow-hidden rounded-lg border border-slate-300"><div className="grid grid-cols-4 bg-white text-center text-xs font-semibold">{topHeaders.map((h, i) => <div key={h} className={`${i < 3 ? "border-r border-slate-300" : ""} py-1`}>{h}</div>)}</div><div className="grid grid-cols-4 border-t border-slate-300"><div className="border-r border-slate-300 p-1">
-  <div className="flex min-w-0 items-center gap-1.5 px-0.5">
-    <input
-      className={`${text} min-w-0 flex-1 text-center`}
-      value={muestraInput}
-      onChange={(e) => handleMuestraInputChange(e.target.value)}
-      autoComplete="off"
-      data-lpignore="true"
-      placeholder="1234"
-    />
-    <div className="flex h-9 shrink-0 items-center rounded-md border border-slate-300 bg-background px-1.5">
-                                        <select
-                                            value={muestraType}
-                                            onChange={(e) => handleTypeToggle(e.target.value as 'SU' | 'AG')}
-                                            className="h-7 w-[92px] rounded-md border-0 bg-transparent px-2 text-xs font-bold uppercase text-slate-700 focus:outline-none focus:ring-0"
-                                            aria-label="Tipo de muestra"
-                                        >
-                                            <option value="SU">SU</option>
-                                            <option value="AG">AG</option>
-                                        </select>
-                                    </div>
-                                    <span className="shrink-0 text-sm font-semibold text-slate-500">-</span>
-                                    <div className="flex h-9 shrink-0 items-center rounded-md border border-slate-300 bg-background px-1.5">
-                                        <input
-                                            type="text"
-                                            value={muestraYear}
-                                            onChange={(e) => handleYearChange(e.target.value)}
-                                            onBlur={handleYearBlur}
-                                            maxLength={2}
-                                            inputMode="numeric"
-                                            aria-label="Año de muestra"
-                                            className="h-7 w-[56px] rounded-md border-0 bg-transparent px-2 text-center text-xs font-bold text-slate-700 focus:outline-none focus:ring-0"
-                                        />
-                                    </div>
-  </div>
-</div><div className="border-r border-slate-300 p-1"><input className={`${text} text-center`} value={form.numero_ot} onChange={(e) => setField("numero_ot", e.target.value)} onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))} autoComplete="off" data-lpignore="true" /></div><div className="border-r border-slate-300 p-1"><input className={`${text} text-center`} value={form.fecha_ensayo} onChange={(e) => setField("fecha_ensayo", e.target.value)} onBlur={() => setField("fecha_ensayo", normDate(form.fecha_ensayo || ""))} autoComplete="off" data-lpignore="true" /></div><div className="p-1"><input className={`${text} text-center`} value={form.realizado_por} onChange={(e) => setField("realizado_por", e.target.value)} autoComplete="off" data-lpignore="true" /></div></div></div></div>
+          <div className="px-3 py-3">
+            <div className="mx-auto max-w-[760px] overflow-hidden rounded-lg border border-slate-300">
+              <div className="grid grid-cols-[1.7fr_1fr_1fr_1fr] bg-white text-center text-xs font-semibold">
+                {topHeaders.map((h, i) => (
+                  <div key={h} className={`${i < 3 ? "border-r border-slate-300" : ""} py-1`}>
+                    {h}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-[1.7fr_1fr_1fr_1fr] border-t border-slate-300">
+                <div className="border-r border-slate-300 p-1">
+                  <div className="flex min-w-0 flex-col gap-1 px-0.5">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <input
+                        className={`${text} min-w-[180px] flex-1 text-center font-mono tracking-wide`}
+                        value={muestraInput}
+                        onChange={(e) => handleMuestraInputChange(e.target.value)}
+                        autoComplete="off"
+                        data-lpignore="true"
+                        placeholder="1234"
+                      />
+                      <div className="flex h-9 shrink-0 items-center rounded-md border border-slate-300 bg-background px-1.5">
+                        <select
+                          value={muestraType}
+                          onChange={(e) => handleTypeToggle(e.target.value as "SU" | "AG")}
+                          className="h-7 w-[84px] rounded-md border-0 bg-transparent px-2 text-xs font-bold uppercase text-slate-700 focus:outline-none focus:ring-0"
+                          aria-label="Tipo de muestra"
+                        >
+                          <option value="SU">SU</option>
+                          <option value="AG">AG</option>
+                        </select>
+                      </div>
+                      <span className="shrink-0 text-sm font-semibold text-slate-500">-</span>
+                      <div className="flex h-9 shrink-0 items-center rounded-md border border-slate-300 bg-background px-1.5">
+                        <input
+                          type="text"
+                          value={muestraYear}
+                          onChange={(e) => handleYearChange(e.target.value)}
+                          onBlur={handleYearBlur}
+                          maxLength={2}
+                          inputMode="numeric"
+                          aria-label="Año de muestra"
+                          className="h-7 w-[52px] rounded-md border-0 bg-transparent px-2 text-center text-xs font-bold text-slate-700 focus:outline-none focus:ring-0"
+                        />
+                      </div>
+                    </div>
+                    <div className="px-1 text-[11px] leading-tight text-slate-500">
+                      Se guardará como{" "}
+                      <span className="font-mono font-semibold text-slate-700">
+                        {muestraCodigoPreview || `${muestraInput || "1234"}-${muestraType}-${muestraYear}`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-r border-slate-300 p-1">
+                  <input
+                    className={`${text} text-center`}
+                    value={form.numero_ot}
+                    onChange={(e) => setField("numero_ot", e.target.value)}
+                    onBlur={() => setField("numero_ot", normOt(form.numero_ot || ""))}
+                    autoComplete="off"
+                    data-lpignore="true"
+                  />
+                </div>
+                <div className="border-r border-slate-300 p-1">
+                  <input
+                    className={`${text} text-center`}
+                    value={form.fecha_ensayo}
+                    onChange={(e) => setField("fecha_ensayo", e.target.value)}
+                    onBlur={() => setField("fecha_ensayo", normDate(form.fecha_ensayo || ""))}
+                    autoComplete="off"
+                    data-lpignore="true"
+                  />
+                </div>
+                <div className="p-1">
+                  <input
+                    className={`${text} text-center`}
+                    value={form.realizado_por}
+                    onChange={(e) => setField("realizado_por", e.target.value)}
+                    autoComplete="off"
+                    data-lpignore="true"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="border-y border-slate-300 bg-slate-100 px-3 py-2 text-center"><p className="text-[30px] font-semibold text-slate-800">Standard Test Method for Relative Density (Specific Gravity) and Absorption of Coarse Aggregate</p><p className="text-[32px] font-semibold text-slate-800">ASTM C127-25</p></div>
 
