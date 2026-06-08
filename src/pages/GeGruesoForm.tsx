@@ -7,8 +7,6 @@ import type { GeGruesoPayload, SiNoFlag } from "@/types"
 import FormatConfirmModal from '../components/FormatConfirmModal'
 
 
-const MATERIAL_CODE = 'AG' as const
-
 const buildFormatPreview = (sampleCode: string | undefined, materialCode: 'SU' | 'AG', ensayo: string) => {
     const currentYear = new Date().getFullYear().toString().slice(-2)
     const normalized = (sampleCode || '').trim().toUpperCase()
@@ -77,14 +75,6 @@ type NumericField =
   | "fr2_c_g"
   | "fr2_d_g"
   | "fr2_masa_total_g"
-
-const formatTodayShortDate = () => {
-  const d = new Date()
-  const dd = String(d.getDate()).padStart(2, "0")
-  const mm = String(d.getMonth() + 1).padStart(2, "0")
-  const yy = String(d.getFullYear()).slice(-2)
-  return `${dd}/${mm}/${yy}`
-}
 
 const init = (): GeGruesoPayload => ({
   muestra: "",
@@ -465,8 +455,8 @@ export default function GeGruesoForm() {
     [setField],
   )
 
-  const fr1Auto = useMemo(() => round4(form.fr1_d_g), [form.fr1_d_g])
-  const fr2Auto = useMemo(() => round4(form.fr2_d_g), [form.fr2_d_g])
+  const fr1Auto = useMemo(() => round4(form.fr1_d_g ?? null), [form.fr1_d_g])
+  const fr2Auto = useMemo(() => round4(form.fr2_d_g ?? null), [form.fr2_d_g])
   const muestraCodigoPreview = useMemo(() => {
     const number = muestraInput.trim()
     if (!number) return ""
