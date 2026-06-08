@@ -122,9 +122,9 @@ const init = (): GeGruesoPayload => ({
   fr2_masa_total_g: null,
   observaciones: "",
   revisado_por: "-",
-  revisado_fecha: formatTodayShortDate(),
+  revisado_fecha: "",
   aprobado_por: "-",
-  aprobado_fecha: formatTodayShortDate(),
+  aprobado_fecha: "",
 })
 
 const normalizeNumericText = (value: string) => {
@@ -783,8 +783,34 @@ export default function GeGruesoForm() {
           <div className="border-b border-slate-300 p-3"><div className="mb-1 text-sm font-semibold">Observaciones:</div><textarea className="w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-500/35" rows={3} value={form.observaciones || ""} onChange={(e) => setField("observaciones", e.target.value)} autoComplete="off" data-lpignore="true" /></div>
 
           <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2">
-            <div className="space-y-2 rounded-lg border border-slate-300 bg-slate-100 p-3"><p className="text-sm font-semibold">Revisado:</p><select className={text} value={form.revisado_por || "-"} onChange={(e) => { const v = e.target.value; setField("revisado_por", v); if (v !== "-") { setField("revisado_fecha", normDate(new Date().toLocaleDateString("sv-SE", { timeZone: "America/Lima" }))) } }}>{REVISORES.map((x) => <option key={x} value={x}>{x}</option>)}</select><p className="text-sm font-semibold">Fecha:</p><input className={text} value={form.revisado_fecha || ""} onChange={(e) => setField("revisado_fecha", e.target.value)} onBlur={() => setField("revisado_fecha", normDate(form.revisado_fecha || ""))} autoComplete="off" data-lpignore="true" /></div>
-            <div className="space-y-2 rounded-lg border border-slate-300 bg-slate-100 p-3"><p className="text-sm font-semibold">Aprobado:</p><select className={text} value={form.aprobado_por || "-"} onChange={(e) => { const v = e.target.value; setField("aprobado_por", v); if (v !== "-") { setField("aprobado_fecha", normDate(new Date().toLocaleDateString("sv-SE", { timeZone: "America/Lima" }))) } }}>{APROBADORES.map((x) => <option key={x} value={x}>{x}</option>)}</select><p className="text-sm font-semibold">Fecha:</p><input className={text} value={form.aprobado_fecha || ""} onChange={(e) => setField("aprobado_fecha", e.target.value)} onBlur={() => setField("aprobado_fecha", normDate(form.aprobado_fecha || ""))} autoComplete="off" data-lpignore="true" /></div>
+            <div className="space-y-2 rounded-lg border border-slate-300 bg-slate-100 p-3">
+              <p className="text-sm font-semibold">Revisado:</p>
+              <select className={text} value={form.revisado_por || "-"} onChange={(e) => {
+                const v = e.target.value;
+                setField("revisado_por", v);
+                if (v !== "-") {
+                  setField("revisado_fecha", normDate(new Date().toLocaleDateString("sv-SE", { timeZone: "America/Lima" })));
+                } else {
+                  setField("revisado_fecha", "");
+                }
+              }}>{REVISORES.map((x) => <option key={x} value={x}>{x}</option>)}</select>
+              <p className="text-sm font-semibold">Fecha:</p>
+              <input className={text} value={form.revisado_fecha || ""} onChange={(e) => setField("revisado_fecha", e.target.value)} onBlur={() => setField("revisado_fecha", normDate(form.revisado_fecha || ""))} autoComplete="off" data-lpignore="true" />
+            </div>
+            <div className="space-y-2 rounded-lg border border-slate-300 bg-slate-100 p-3">
+              <p className="text-sm font-semibold">Aprobado:</p>
+              <select className={text} value={form.aprobado_por || "-"} onChange={(e) => {
+                const v = e.target.value;
+                setField("aprobado_por", v);
+                if (v !== "-") {
+                  setField("aprobado_fecha", normDate(new Date().toLocaleDateString("sv-SE", { timeZone: "America/Lima" })));
+                } else {
+                  setField("aprobado_fecha", "");
+                }
+              }}>{APROBADORES.map((x) => <option key={x} value={x}>{x}</option>)}</select>
+              <p className="text-sm font-semibold">Fecha:</p>
+              <input className={text} value={form.aprobado_fecha || ""} onChange={(e) => setField("aprobado_fecha", e.target.value)} onBlur={() => setField("aprobado_fecha", normDate(form.aprobado_fecha || ""))} autoComplete="off" data-lpignore="true" />
+            </div>
           </div>
         </div>
 
@@ -794,18 +820,19 @@ export default function GeGruesoForm() {
           <button type="button" className="h-10 rounded-lg border border-emerald-700 bg-emerald-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 disabled:opacity-60" onClick={() => setPendingFormatAction(true)} disabled={loading}><span className="inline-flex items-center gap-2">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}Guardar y Descargar</span></button>
         </div>
       </div>
-        <FormatConfirmModal
-            open={pendingFormatAction !== null}
-            formatLabel={buildFormatPreview(form.muestra, muestraType, 'GE GRUESO')}
-            actionLabel={pendingFormatAction ? 'Guardar y Descargar' : 'Guardar'}
-            onClose={() => setPendingFormatAction(null)}
-            onConfirm={() => {
-                if (pendingFormatAction === null) return
-                const shouldDownload = pendingFormatAction
-                setPendingFormatAction(null)
-                void save(shouldDownload)
-            }}
-        />
+
+      <FormatConfirmModal
+        open={pendingFormatAction !== null}
+        formatLabel={buildFormatPreview(form.muestra, muestraType, 'GE GRUESO')}
+        actionLabel={pendingFormatAction ? 'Guardar y Descargar' : 'Guardar'}
+        onClose={() => setPendingFormatAction(null)}
+        onConfirm={() => {
+          if (pendingFormatAction === null) return
+          const shouldDownload = pendingFormatAction
+          setPendingFormatAction(null)
+          void save(shouldDownload)
+        }}
+      />
 
     </div>
   )
