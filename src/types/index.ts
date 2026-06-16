@@ -32,12 +32,16 @@ export interface GeGruesoPayload {
     fr1_a_g?: number | null
     fr1_b_g?: number | null
     fr1_c_g?: number | null
+    fr1_d1_g?: number | null
+    fr1_d2_g?: number | null
     fr1_d_g?: number | null
     fr1_masa_total_g?: number | null
 
     fr2_a_g?: number | null
     fr2_b_g?: number | null
     fr2_c_g?: number | null
+    fr2_d1_g?: number | null
+    fr2_d2_g?: number | null
     fr2_d_g?: number | null
     fr2_masa_total_g?: number | null
 

@@ -68,11 +68,15 @@ type NumericField =
   | "fr1_a_g"
   | "fr1_b_g"
   | "fr1_c_g"
+  | "fr1_d1_g"
+  | "fr1_d2_g"
   | "fr1_d_g"
   | "fr1_masa_total_g"
   | "fr2_a_g"
   | "fr2_b_g"
   | "fr2_c_g"
+  | "fr2_d1_g"
+  | "fr2_d2_g"
   | "fr2_d_g"
   | "fr2_masa_total_g"
 
@@ -103,11 +107,15 @@ const init = (): GeGruesoPayload => ({
   fr1_a_g: null,
   fr1_b_g: null,
   fr1_c_g: null,
+  fr1_d1_g: null,
+  fr1_d2_g: null,
   fr1_d_g: null,
   fr1_masa_total_g: null,
   fr2_a_g: null,
   fr2_b_g: null,
   fr2_c_g: null,
+  fr2_d1_g: null,
+  fr2_d2_g: null,
   fr2_d_g: null,
   fr2_masa_total_g: null,
   observaciones: "",
@@ -368,10 +376,6 @@ function Report({
 
 export default function GeGruesoForm() {
   const [form, setForm] = useState<GeGruesoPayload>(() => init())
-  const [dBoxes, setDBoxes] = useState<{ fr1: { box1: number | null; box2: number | null }; fr2: { box1: number | null; box2: number | null } }>({
-    fr1: { box1: null, box2: null },
-    fr2: { box1: null, box2: null },
-  })
   const [loading, setLoading] = useState(false)
   const [loadingEdit, setLoadingEdit] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(() => ensayoIdFromUrl())
@@ -439,20 +443,22 @@ export default function GeGruesoForm() {
   const setDBox = useCallback(
     (fraction: "fr1" | "fr2", box: "box1" | "box2", raw: string) => {
       const parsed = n(raw)
-      setDBoxes((prev) => {
-        const next = {
-          ...prev,
-          [fraction]: {
-            ...prev[fraction],
-            [box]: parsed,
-          },
+      const d1Field = `${fraction}_d1_g` as keyof GeGruesoPayload
+      const d2Field = `${fraction}_d2_g` as keyof GeGruesoPayload
+      const dField = `${fraction}_d_g` as keyof GeGruesoPayload
+      setForm((p) => {
+        const d1 = box === "box1" ? parsed : (p[d1Field] as number | null)
+        const d2 = box === "box2" ? parsed : (p[d2Field] as number | null)
+        const total = sum([d1, d2])
+        return {
+          ...p,
+          [d1Field]: d1,
+          [d2Field]: d2,
+          [dField]: total,
         }
-        const total = sum([next[fraction].box1, next[fraction].box2])
-        setField((`${fraction}_d_g` as NumericField), total as GeGruesoPayload[NumericField])
-        return next
       })
     },
-    [setField],
+    [setForm],
   )
 
   const fr1Auto = useMemo(() => round4(form.fr1_d_g ?? null), [form.fr1_d_g])
@@ -469,11 +475,13 @@ export default function GeGruesoForm() {
     try {
       const hydrated = { ...init(), ...JSON.parse(raw) } as GeGruesoPayload
       hydrated.fecha_ensayo = normDate(hydrated.fecha_ensayo || "")
+      if (hydrated.fr1_d1_g === undefined && hydrated.fr1_d_g !== null) {
+        hydrated.fr1_d1_g = hydrated.fr1_d_g
+      }
+      if (hydrated.fr2_d1_g === undefined && hydrated.fr2_d_g !== null) {
+        hydrated.fr2_d1_g = hydrated.fr2_d_g
+      }
       setForm(hydrated)
-      setDBoxes({
-        fr1: { box1: hydrated.fr1_d_g ?? null, box2: null },
-        fr2: { box1: hydrated.fr2_d_g ?? null, box2: null },
-      })
     } catch {}
   }, [editingId])
 
@@ -492,11 +500,13 @@ export default function GeGruesoForm() {
         if (!cancelled && detail.payload) {
           const hydrated = { ...init(), ...detail.payload } as GeGruesoPayload
           hydrated.fecha_ensayo = normDate(hydrated.fecha_ensayo || "")
+          if (hydrated.fr1_d1_g === undefined && hydrated.fr1_d_g !== null) {
+            hydrated.fr1_d1_g = hydrated.fr1_d_g
+          }
+          if (hydrated.fr2_d1_g === undefined && hydrated.fr2_d_g !== null) {
+            hydrated.fr2_d1_g = hydrated.fr2_d_g
+          }
           setForm(hydrated)
-          setDBoxes({
-            fr1: { box1: hydrated.fr1_d_g ?? null, box2: null },
-            fr2: { box1: hydrated.fr2_d_g ?? null, box2: null },
-          })
         }
       } catch {
         toast.error("No se pudo cargar ensayo GE Grueso para edicion.")
@@ -533,10 +543,6 @@ export default function GeGruesoForm() {
         }
         localStorage.removeItem(`${DRAFT_KEY}:${editingId ?? "new"}`)
         setForm(init())
-        setDBoxes({
-          fr1: { box1: null, box2: null },
-          fr2: { box1: null, box2: null },
-        })
         setEditingId(null)
         if (window.parent !== window) window.parent.postMessage({ type: "CLOSE_MODAL" }, "*")
         toast.success(download ? "GE Grueso guardado y descargado." : "GE Grueso guardado.")
@@ -750,7 +756,8 @@ export default function GeGruesoForm() {
             title="1° Fracción"
             values={{ a: form.fr1_a_g, b: form.fr1_b_g, c: form.fr1_c_g, d: form.fr1_d_g }}
             setNum={setNum}
-            dBoxes={dBoxes.fr1}
+            d1={form.fr1_d1_g}
+            d2={form.fr1_d2_g}
             setDBox={(box, raw) => setDBox("fr1", box, raw)}
             totalAuto={fr1Auto}
             totalValue={form.fr1_masa_total_g ?? null}
@@ -761,7 +768,8 @@ export default function GeGruesoForm() {
             title="2° Fracción"
             values={{ a: form.fr2_a_g, b: form.fr2_b_g, c: form.fr2_c_g, d: form.fr2_d_g }}
             setNum={setNum}
-            dBoxes={dBoxes.fr2}
+            d1={form.fr2_d1_g}
+            d2={form.fr2_d2_g}
             setDBox={(box, raw) => setDBox("fr2", box, raw)}
             totalAuto={fr2Auto}
             totalValue={form.fr2_masa_total_g ?? null}
