@@ -295,7 +295,8 @@ function Report({
   title,
   values,
   setNum,
-  dBoxes,
+  d1,
+  d2,
   setDBox,
   totalAuto,
   totalValue,
@@ -305,7 +306,8 @@ function Report({
   title: string
   values: { a: number | null | undefined; b: number | null | undefined; c: number | null | undefined; d: number | null | undefined }
   setNum: (field: NumericField, raw: string) => void
-  dBoxes: { box1: number | null; box2: number | null }
+  d1: number | null | undefined
+  d2: number | null | undefined
   setDBox: (box: "box1" | "box2", raw: string) => void
   totalAuto: number | null
   totalValue: number | null
@@ -342,7 +344,7 @@ function Report({
                       type="number"
                       step="any"
                       className={input}
-                      value={dBoxes.box1 ?? ""}
+                      value={d1 ?? ""}
                       onChange={(e) => setDBox("box1", e.target.value)}
                       placeholder="Caja 1"
                     />
@@ -350,7 +352,7 @@ function Report({
                       type="number"
                       step="any"
                       className={input}
-                      value={dBoxes.box2 ?? ""}
+                      value={d2 ?? ""}
                       onChange={(e) => setDBox("box2", e.target.value)}
                       placeholder="Caja 2"
                     />
